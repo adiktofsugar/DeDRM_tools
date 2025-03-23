@@ -189,37 +189,14 @@ def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime 
     print("Decryption succeeded after {0:.1f} seconds".format(time.time()-starttime))
     return mb
 
-
-# kDatabaseFiles is a list of files created by kindlekey
-def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
-    starttime = time.time()
-    kDatabases = []
-    for dbfile in kDatabaseFiles:
-        kindleDatabase = {}
-        try:
-            with open(dbfile, 'r') as keyfilein:
-                kindleDatabase = json.loads(keyfilein.read())
-            kDatabases.append([dbfile,kindleDatabase])
-        except Exception as e:
-            print("Error getting database from file {0:s}: {1:s}".format(dbfile,e))
-            traceback.print_exc()
-
-
-
-    try:
-        book = GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime)
-    except Exception as e:
-        print("Error decrypting book after {1:.1f} seconds: {0}".format(e.args[0],time.time()-starttime))
-        traceback.print_exc()
-        return 1
-
+def inferReasonableName(infile, book_title):
     # Try to infer a reasonable name
     orig_fn_root = os.path.splitext(os.path.basename(infile))[0]
     if (
         re.match('^B[A-Z0-9]{9}(_EBOK|_EBSP|_sample)?$', orig_fn_root) or
         re.match('^[0-9A-F-]{36}$', orig_fn_root)
     ):  # Kindle for PC / Mac / Android / Fire / iOS
-        clean_title = cleanup_name(book.getBookTitle())
+        clean_title = cleanup_name(book_title)
         outfilename = "{}_{}".format(orig_fn_root, clean_title)
     else:  # E Ink Kindle, which already uses a reasonable name
         outfilename = orig_fn_root
@@ -228,7 +205,40 @@ def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
     if len(outfilename)>150:
         outfilename = outfilename[:99]+"--"+outfilename[-49:]
 
-    outfilename = outfilename+"_nodrm"
+    return outfilename
+
+def collectKDatabases(kDatabaseFiles):
+    kDatabases = []
+    errors = []
+    for dbfile in kDatabaseFiles:
+        kindleDatabase = {}
+        try:
+            with open(dbfile, 'r') as keyfilein:
+                kindleDatabase = json.loads(keyfilein.read())
+            kDatabases.append([dbfile,kindleDatabase])
+        except Exception as e:
+            errors.append([dbfile,e])
+
+    return kDatabases
+
+
+# kDatabaseFiles is a list of files created by kindlekey
+def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
+    starttime = time.time()
+    kDatabases,errors = collectKDatabases(kDatabaseFiles)
+    
+    for dbfile, e in errors:
+        print("Error getting database from file {0:s}: {1:s}".format(dbfile,e))
+
+    try:
+        book = GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime)
+    except Exception as e:
+        print("Error decrypting book after {1:.1f} seconds: {0}".format(e.args[0],time.time()-starttime))
+        traceback.print_exc()
+        return 1
+
+    outfilename = inferReasonableName(infile, book.getBookTitle())
+    outfilename = outfilename + "_nodrm"
     outfile = os.path.join(outdir, outfilename + book.getBookExtension())
 
     book.getFile(outfile)
