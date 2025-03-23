@@ -85,9 +85,9 @@ import binascii
 #@@CALIBRE_COMPAT_CODE@@
 
 
-from .alfcrypto import Pukall_Cipher
-from .utilities import SafeUnbuffered
-from .argv_utils import unicode_argv
+from alfcrypto import Pukall_Cipher
+from utilities import SafeUnbuffered
+from argv_utils import unicode_argv
 
 
 class DrmException(Exception):

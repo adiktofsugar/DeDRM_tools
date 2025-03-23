@@ -29,14 +29,14 @@ import re
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from .utilities import SafeUnbuffered
+from utilities import SafeUnbuffered
 
 try:
     from calibre.constants import iswindows
 except:
     iswindows = sys.platform.startswith('win')
 
-from .argv_utils import unicode_argv
+from argv_utils import unicode_argv
 
 class DrmException(Exception):
     pass

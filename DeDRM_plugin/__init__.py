@@ -162,7 +162,7 @@ class DeDRM(FileTypePlugin):
 
 
     def cli_main(self, data):
-        from .standalone import main
+        from standalone import main
         main(data)
     
     def initialize(self):

@@ -58,7 +58,7 @@ except ImportError:
                 # Windows-friendly choice: pylzma wheels
                 import pylzma as lzma
 
-from .kfxtables import *
+from kfxtables import *
 
 TID_NULL = 0
 TID_BOOLEAN = 1

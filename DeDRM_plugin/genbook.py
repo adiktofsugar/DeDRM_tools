@@ -6,7 +6,7 @@ from __future__ import print_function
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from .utilities import SafeUnbuffered
+from utilities import SafeUnbuffered
 
 import sys
 import csv

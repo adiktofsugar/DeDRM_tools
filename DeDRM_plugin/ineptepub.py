@@ -72,8 +72,8 @@ def unpad(data, padding=16):
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from .utilities import SafeUnbuffered
-from .argv_utils import unicode_argv
+from utilities import SafeUnbuffered
+from argv_utils import unicode_argv
 
 
 class ADEPTError(Exception):

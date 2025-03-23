@@ -8,7 +8,7 @@
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from .utilities import SafeUnbuffered
+from utilities import SafeUnbuffered
 
 import sys
 import csv
