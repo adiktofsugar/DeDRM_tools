@@ -219,7 +219,7 @@ def collectKDatabases(kDatabaseFiles):
         except Exception as e:
             errors.append([dbfile,e])
 
-    return kDatabases
+    return [kDatabases, errors]
 
 
 # kDatabaseFiles is a list of files created by kindlekey

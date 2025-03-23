@@ -90,8 +90,6 @@ isosx = sys.platform.startswith('darwin')
 import cgi
 import logging
 
-logging.basicConfig()
-#logging.basicConfig(level=logging.DEBUG)
 
 
 class Sectionizer(object):
@@ -494,6 +492,7 @@ def cli_main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig()
     sys.stdout=SafeUnbuffered(sys.stdout)
     sys.stderr=SafeUnbuffered(sys.stderr)
     sys.exit(cli_main())
