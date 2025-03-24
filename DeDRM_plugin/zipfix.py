@@ -25,9 +25,8 @@ import sys, os
 #@@CALIBRE_COMPAT_CODE@@
 
 import zlib
-import zipfilerugged
-from zipfilerugged import ZipInfo, ZeroedZipInfo
-import getopt
+from . import zipfilerugged
+from .zipfilerugged import ZipInfo, ZeroedZipInfo
 from struct import unpack
 
 

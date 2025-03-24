@@ -46,9 +46,8 @@ import os
 import traceback
 import base64
 import zlib
-import zipfile
 from zipfile import ZipInfo, ZipFile, ZIP_STORED, ZIP_DEFLATED
-from zeroedzipinfo import ZeroedZipInfo
+from .zeroedzipinfo import ZeroedZipInfo
 from contextlib import closing
 from lxml import etree
 from uuid import UUID

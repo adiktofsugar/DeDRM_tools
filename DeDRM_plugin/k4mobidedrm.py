@@ -82,11 +82,7 @@ import json
 class DrmException(Exception):
     pass
 
-import mobidedrm
-import topazextract
-import kgenpids
-import androidkindlekey
-import kfxdedrm
+from . import mobidedrm, topazextract, kgenpids, androidkindlekey, kfxdedrm
 
 from .utilities import SafeUnbuffered
 
