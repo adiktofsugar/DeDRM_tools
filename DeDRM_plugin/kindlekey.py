@@ -64,8 +64,8 @@ except NameError:
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from utilities import SafeUnbuffered
-from argv_utils import unicode_argv
+from .utilities import SafeUnbuffered
+from .argv_utils import unicode_argv
     
 
 try:

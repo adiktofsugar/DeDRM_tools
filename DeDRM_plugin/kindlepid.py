@@ -18,8 +18,8 @@ import binascii
 
 #@@CALIBRE_COMPAT_CODE@@
 
-from utilities import SafeUnbuffered
-from argv_utils import unicode_argv
+from .utilities import SafeUnbuffered
+from .argv_utils import unicode_argv
 
 letters = b'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'
 
