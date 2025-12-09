@@ -136,7 +136,8 @@ def unescape(text):
         return text # leave as is
     return re.sub("&#?\\w+;", fixup, text)
 
-def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime = time.time()):
+
+def getBook(infile):
     # handle the obvious cases at the beginning
     if not os.path.isfile(infile):
         raise DrmException("Input file does not exist.")
@@ -156,6 +157,18 @@ def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime 
         mb = mobidedrm.MobiBook(infile)
     else:
         mb = topazextract.TopazBook(infile)
+    return mb
+
+
+def has_drm(infile):
+    mb = getBook(infile)
+    return mb.has_drm()
+
+
+def GetDecryptedBook(
+    infile, kDatabases, androidFiles, serials, pids, starttime=time.time()
+):
+    mb = getBook(infile)
 
     try: 
         bookname = unescape(mb.getBookTitle())

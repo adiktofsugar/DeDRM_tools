@@ -36,6 +36,16 @@ class KFXZipBook:
     def getPIDMetaInfo(self):
         return (None, None)
 
+    def has_drm(self):
+        with zipfile.ZipFile(self.infile, "r") as zf:
+            for filename in zf.namelist():
+                with zf.open(filename) as fh:
+                    data = fh.read(8)
+                    if data == b"\xeaDRMION\xee":
+                        return True
+
+        return False
+
     def processBook(self, totalpids):
         with zipfile.ZipFile(self.infile, 'r') as zf:
             for filename in zf.namelist():

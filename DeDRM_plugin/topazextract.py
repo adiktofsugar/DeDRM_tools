@@ -269,6 +269,10 @@ class TopazBook:
 
         return record
 
+    def has_drm(self):
+        # this is a guess, but it _seems_ like it matches the output from processBook
+        return self.bookHeaderRecords.get("dkey") is not None
+
     def processBook(self, pidlst):
         raw = 0
         fixedimage=True
