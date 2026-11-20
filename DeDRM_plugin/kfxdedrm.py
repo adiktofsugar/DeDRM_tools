@@ -537,6 +537,15 @@ class KFXZipBook:
         print("Packaged {0:d} delivery component(s) found beside the archive; {1:d} opened."
               .format(len(siblings), opened_count))
 
+    def has_drm(self):
+        # DRMION documents and encrypted envelopes share this magic
+        with zipfile.ZipFile(self.infile, 'r') as zf:
+            for filename in zf.namelist():
+                with zf.open(filename) as fh:
+                    if fh.read(8) == DRMION_MAGIC:
+                        return True
+        return False
+
     def processBook(self, totalpids):
         totalpids = _expand_totalpids(totalpids, self.serials)
         with zipfile.ZipFile(self.infile, 'r') as zf:
@@ -871,6 +880,10 @@ class KFXContainerBook(KFXZipBook):
         return ("No DRM voucher was found for this container. Put the container beside the "
                 ".kfx-zip archive it came from, or a voucher document, and try again. "
                 "Passing the file back unchanged.")
+
+    def has_drm(self):
+        # the inherited zip scan doesn't apply to a bare container
+        raise NotImplementedError("DRM detection for bare KFX containers isn't supported")
 
     def processBook(self, totalpids):
         totalpids = _expand_totalpids(totalpids, self.serials)

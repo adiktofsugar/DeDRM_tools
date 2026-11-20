@@ -372,6 +372,10 @@ class MobiBook:
             return ".azw3"
         return ".mobi"
 
+    def has_drm(self):
+        crypto_type, = struct.unpack('>H', self.sect[0xC:0xC+2])
+        return crypto_type != 0
+
     # pids in pidlist may be unicode or bytearrays or bytes
     def processBook(self, pidlist):
         crypto_type, = struct.unpack('>H', self.sect[0xC:0xC+2])

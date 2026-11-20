@@ -274,6 +274,10 @@ class TopazBook:
 
         return record
 
+    def has_drm(self):
+        # processBook treats a missing dkey record as unencrypted
+        return b'dkey' in self.bookHeaderRecords
+
     def processBook(self, pidlst):
         raw = 0
         fixedimage=True

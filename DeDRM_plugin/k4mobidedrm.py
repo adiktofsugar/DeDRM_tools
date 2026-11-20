@@ -163,7 +163,7 @@ def secret_text(value):
   if isinstance(value, str):
     return value
   return None
-def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime = time.time(),skeyfile=None, remove_watermarks=True,original_path=None):
+def getBook(infile, skeyfile=None, serials=None, remove_watermarks=True, original_path=None):
     # handle the obvious cases at the beginning
     if not os.path.isfile(infile):
         raise DrmException("Input file does not exist.")
@@ -191,6 +191,19 @@ def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime 
         mb = mobidedrm.MobiBook(infile, remove_watermarks)
     else:
         mb = topazextract.TopazBook(infile)
+    return mb
+
+
+def has_drm(infile):
+    mb = getBook(infile)
+    try:
+        return mb.has_drm()
+    finally:
+        mb.cleanup()
+
+
+def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime = time.time(),skeyfile=None, remove_watermarks=True,original_path=None):
+    mb = getBook(infile, skeyfile, serials, remove_watermarks, original_path)
 
     try: 
         bookname = unescape(mb.getBookTitle())
@@ -279,7 +292,7 @@ def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime 
             if text is not None and len(text) in accepted_secret_lengths:
               k4i_secrets.add(text)
     print("Adding {} serials and {} secrets from k4i files".format(len(k4i_serials),len(k4i_secrets)))
-    if magic16.startswith(kfxdedrm.RELATIONAL_CONTAINER_MAGIC) or magic8[:4] == b'PK\x03\x04':
+    if isinstance(mb, kfxdedrm.KFXZipBook):
       for dsn in k4i_serials:
         for sec in  k4i_secrets:
           totalpids.append(dsn+sec)
@@ -298,10 +311,28 @@ def GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime 
     return mb
 
 
+def inferReasonableName(infile, book_title):
+    # Try to infer a reasonable name
+    orig_fn_root = os.path.splitext(os.path.basename(infile))[0]
+    if (
+        re.match('^B[A-Z0-9]{9}(_EBOK|_EBSP|_sample)?$', orig_fn_root) or
+        re.match('^[0-9A-F-]{36}$', orig_fn_root)
+    ):  # Kindle for PC / Mac / Android / Fire / iOS
+        clean_title = cleanup_name(book_title)
+        outfilename = "{}_{}".format(orig_fn_root, clean_title)
+    else:  # E Ink Kindle, which already uses a reasonable name
+        outfilename = orig_fn_root
+
+    # avoid excessively long file names
+    if len(outfilename)>150:
+        outfilename = outfilename[:99]+"--"+outfilename[-49:]
+    return outfilename
+
+
 # kDatabaseFiles is a list of files created by kindlekey
-def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
-    starttime = time.time()
+def collectKDatabases(kDatabaseFiles):
     kDatabases = []
+    errors = []
     for dbfile in kDatabaseFiles:
         kindleDatabase = {}
         try:
@@ -309,10 +340,15 @@ def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
                 kindleDatabase = json.loads(keyfilein.read())
             kDatabases.append([dbfile,kindleDatabase])
         except Exception as e:
-            print("Error getting database from file {0:s}: {1:s}".format(dbfile,e))
-            traceback.print_exc()
+            errors.append([dbfile,e])
+    return kDatabases, errors
 
 
+def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
+    starttime = time.time()
+    kDatabases, errors = collectKDatabases(kDatabaseFiles)
+    for dbfile, e in errors:
+        print("Error getting database from file {0:s}: {1}".format(dbfile,e))
 
     try:
         book = GetDecryptedBook(infile, kDatabases, androidFiles, serials, pids, starttime)
@@ -321,22 +357,7 @@ def decryptBook(infile, outdir, kDatabaseFiles, androidFiles, serials, pids):
         traceback.print_exc()
         return 1
 
-    # Try to infer a reasonable name
-    orig_fn_root = os.path.splitext(os.path.basename(infile))[0]
-    if (
-        re.match('^B[A-Z0-9]{9}(_EBOK|_EBSP|_sample)?$', orig_fn_root) or
-        re.match('^[0-9A-F-]{36}$', orig_fn_root)
-    ):  # Kindle for PC / Mac / Android / Fire / iOS
-        clean_title = cleanup_name(book.getBookTitle())
-        outfilename = "{}_{}".format(orig_fn_root, clean_title)
-    else:  # E Ink Kindle, which already uses a reasonable name
-        outfilename = orig_fn_root
-
-    # avoid excessively long file names
-    if len(outfilename)>150:
-        outfilename = outfilename[:99]+"--"+outfilename[-49:]
-
-    outfilename = outfilename+"_nodrm"
+    outfilename = inferReasonableName(infile, book.getBookTitle())+"_nodrm"
     outfile = os.path.join(outdir, outfilename + book.getBookExtension())
 
     book.getFile(outfile)
