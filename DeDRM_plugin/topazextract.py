@@ -24,16 +24,21 @@ import traceback
 from struct import pack
 from struct import unpack
 
-from .alfcrypto import Topaz_Cipher
-from .utilities import SafeUnbuffered
+try:
+  from .alfcrypto import Topaz_Cipher
+  from .utilities import SafeUnbuffered
 
-from .argv_utils import unicode_argv
+  from .argv_utils import unicode_argv
+except: #python sure became weirder with time
+  from alfcrypto import Topaz_Cipher
+  from utilities import SafeUnbuffered
 
+  from argv_utils import unicode_argv
 
 #global switch
 debug = False
 
-from . import kgenpids
+import kgenpids
 
 
 class DrmException(Exception):
@@ -268,10 +273,6 @@ class TopazBook:
             record = zlib.decompress(record)
 
         return record
-
-    def has_drm(self):
-        # this is a guess, but it _seems_ like it matches the output from processBook
-        return self.bookHeaderRecords.get("dkey") is not None
 
     def processBook(self, pidlst):
         raw = 0
